@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 set -xe
+
+sed -i 's/enabled=0/enabled=1/' /etc/yum.repos.d/CentOS-Linux-PowerTools.repo
 
 yum install -y  gcc \
 				make \
@@ -7,11 +9,11 @@ yum install -y  gcc \
 				protobuf-c \
 				protobuf-c-compiler \
 				protobuf-c-devel \
-				python-devel \
-				python-setuptools \
+				python2-devel \
+				python2-setuptools \
 				gdb 
 
 ulimit -c unlimited
-cd /tmp/otus/
+cd /tmp/otus/src
 protoc-c --c_out=. deviceapps.proto
-python setup.py test
+python2 setup.py test

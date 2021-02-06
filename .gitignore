@@ -5,3 +5,7 @@
 tags
 .venv
 data
+*.so
+deviceapps.pb-c.*
+pb.egg-info
+build
