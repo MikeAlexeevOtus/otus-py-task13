@@ -11,6 +11,7 @@ yum install -y  gcc \
 				protobuf-c-devel \
 				python2-devel \
 				python2-setuptools \
+				zlib-devel \
 				gdb 
 
 ulimit -c unlimited

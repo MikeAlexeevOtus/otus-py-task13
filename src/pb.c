@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <zlib.h>
 #include "deviceapps.pb-c.h"
 
 #define MAGIC  0xFFFFFFFF
@@ -61,12 +62,47 @@ void example() {
 static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
     const char* path;
     PyObject* o;
+    PyObject *iterator;
+    PyObject *item;
+    size_t total_written_bytes = 0;
+    gzFile out;
+
+    // struct with fields from dict for protobuf
+    // protobuf to string
+    // get len
+    // write to file
 
     if (!PyArg_ParseTuple(args, "Os", &o, &path))
         return NULL;
 
+    iterator = PyObject_GetIter(o);
+    if (iterator == NULL) {
+        return NULL;
+    }
     printf("Write to: %s\n", path);
-    Py_RETURN_NONE;
+    out = gzopen(path, "wb");
+    if (out == NULL) {
+        return NULL;
+    }
+
+    while ((item = PyIter_Next(iterator))) {
+        pbheader_t header = PBHEADER_INIT;
+        int expected_written_bytes;
+        int written_bytes;
+        /* do something with item */
+        /* release reference when done */
+        expected_written_bytes = sizeof(pbheader_t);
+        written_bytes = gzwrite(out, &header, expected_written_bytes);
+        total_written_bytes += written_bytes;
+
+
+        /*PyObject* PyDict_GetItem(PyObject *p, PyObject *key);*/
+        Py_DECREF(item);
+    }
+    gzclose(out);
+
+    Py_DECREF(iterator);
+    return PyLong_FromSsize_t(total_written_bytes);
 }
 
 // Unpack only messages with type == DEVICE_APPS_TYPE
