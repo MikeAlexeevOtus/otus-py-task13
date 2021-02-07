@@ -43,6 +43,7 @@ void fill_device_app(DeviceApps *msg, PyObject* item) {
     }
 
     msg->n_apps = PyList_Size(apps);
+    // memory free is done in free_device_app
     msg->apps = malloc(sizeof(uint32_t) * msg->n_apps);
 
     for (int i=0; i < msg->n_apps; i++) {
@@ -105,11 +106,6 @@ static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
     size_t total_written_bytes = 0;
     gzFile out;
 
-    // struct with fields from dict for protobuf
-    // protobuf to string
-    // get len
-    // write to file
-
     if (!PyArg_ParseTuple(args, "Os", &o, &path))
         return NULL;
 
@@ -117,7 +113,6 @@ static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
     if (iterator == NULL) {
         return NULL;
     }
-    printf("Write to: %s\n", path);
     out = gzopen(path, "wb");
     if (out == NULL) {
         return NULL;
@@ -132,8 +127,6 @@ static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
         msg.device = &device;
         fill_device_app(&msg, item);
 
-        /* do something with item */
-        /* release reference when done */
         header.length = device_apps__get_packed_size(&msg);
         header.type = DEVICE_APPS_TYPE;
         buf = malloc(header.length);
