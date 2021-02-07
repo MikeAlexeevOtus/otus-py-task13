@@ -18,9 +18,11 @@ typedef struct pbheader_s {
 
 
 // https://github.com/protobuf-c/protobuf-c/wiki/Examples
-void fill_device_app(DeviceApps *msg) {
-    char *device_id = "e7e1a50c0ec2747ca56cd9e1558c0d7c";
-    char *device_type = "idfa";
+void fill_device_app(DeviceApps *msg, PyObject* item) {
+    PyObject* device_data = PyDict_GetItemString(item, "device");
+
+    const char *device_id = PyString_AsString(PyDict_GetItemString(device_data, "id"));
+    const char *device_type = PyString_AsString(PyDict_GetItemString(device_data, "type"));
     msg->device->has_id = 1;
     msg->device->id.data = (uint8_t*)device_id;
     msg->device->id.len = strlen(device_id);
@@ -28,16 +30,24 @@ void fill_device_app(DeviceApps *msg) {
     msg->device->type.data = (uint8_t*)device_type;
     msg->device->type.len = strlen(device_type);
 
-    msg->has_lat = 1;
-    msg->lat = 67.7835424444;
-    msg->has_lon = 1;
-    msg->lon = -22.8044005471;
+    PyObject* lat = PyDict_GetItemString(item, "lat");
+    PyObject* lon = PyDict_GetItemString(item, "lon");
+    PyObject* apps = PyDict_GetItemString(item, "apps");
+    if (lat != NULL) {
+        msg->has_lat = 1;
+        msg->lat = PyFloat_AsDouble(lat);
+    }
+    if (lat != NULL) {
+        msg->has_lon = 1;
+        msg->lon = PyFloat_AsDouble(lon);
+    }
 
-    msg->n_apps = 3;
+    msg->n_apps = PyList_Size(apps);
     msg->apps = malloc(sizeof(uint32_t) * msg->n_apps);
-    msg->apps[0] = 42;
-    msg->apps[1] = 43;
-    msg->apps[2] = 44;
+
+    for (int i=0; i < msg->n_apps; i++) {
+        msg->apps[i] = (uint32_t) PyLong_AsLong(PyList_GetItem(apps, i));
+    }
 }
 
 void free_device_app(DeviceApps *msg) {
@@ -120,7 +130,7 @@ static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
         DeviceApps msg = DEVICE_APPS__INIT;
         DeviceApps__Device device = DEVICE_APPS__DEVICE__INIT;
         msg.device = &device;
-        fill_device_app(&msg);
+        fill_device_app(&msg, item);
 
         /* do something with item */
         /* release reference when done */
@@ -134,7 +144,6 @@ static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
         free(buf);
         free_device_app(&msg);
 
-        /*PyObject* PyDict_GetItem(PyObject *p, PyObject *key);*/
         Py_DECREF(item);
     }
     gzclose(out);
