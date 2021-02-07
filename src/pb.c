@@ -129,7 +129,7 @@ static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
         device_apps__pack(&msg, buf);
 
         total_written_bytes += gzwrite(out, &header, sizeof(pbheader_t));
-        total_written_bytes += gzwrite(out, &buf, header.length);
+        total_written_bytes += gzwrite(out, buf, header.length);
 
         free(buf);
         free_device_app(&msg);
