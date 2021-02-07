@@ -135,6 +135,7 @@ static PyObject* py_deviceapps_xwrite_pb(PyObject* self, PyObject* args) {
         /* do something with item */
         /* release reference when done */
         header.length = device_apps__get_packed_size(&msg);
+        header.type = DEVICE_APPS_TYPE;
         buf = malloc(header.length);
         device_apps__pack(&msg, buf);
 
