@@ -12,9 +12,13 @@ yum install -y  gcc \
 				python2-devel \
 				python2-setuptools \
 				zlib-devel \
+				python2-pip \
 				gdb 
+
+pip2 install protobuf
 
 ulimit -c unlimited
 cd /tmp/otus/src
 protoc-c --c_out=. deviceapps.proto
+protoc --python_out=tests/ deviceapps.proto
 python2 setup.py test
